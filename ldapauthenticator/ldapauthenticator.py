@@ -1,5 +1,6 @@
 import ldap3
 import re
+import os
 
 from jupyterhub.auth import Authenticator
 from tornado import gen
@@ -234,7 +235,10 @@ class LDAPAuthenticator(Authenticator):
                 self.log.warn('username:%s User not in any of the allowed groups', username)
                 return None
             else:
-                return username
+				os.system('docker exec -d jupyterhub_nfs useradd -d /exports/jupyterUsers/'+username.lower()+' -s /bin/bash -N -g students '+username.lower())
+                os.system('docker exec -d jupyterhub_nfs bash -c "mkdir -p /exports/jupyterUsers/'+username.lower()+' ; chown '+username.lower()+':students -R /exports/jupyterUsers/'+username.lower()+'"')
+                
+                return username.lower()
         else:
             self.log.warn('Invalid password for user {username}'.format(
                 username=username,
